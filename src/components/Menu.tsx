@@ -1,4 +1,4 @@
-import { role } from '@/lib/data';
+import { currentUser } from '@clerk/nextjs/server';
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -9,7 +9,7 @@ const menuItems = [
       {
         icon: '/home.png',
         label: 'Home',
-        href: `/${role}`,
+        href: `/`,
         visible: ['admin', 'teacher', 'student', 'parent'],
       },
       {
@@ -117,7 +117,10 @@ const menuItems = [
   },
 ];
 
-const Menu = () => {
+const Menu = async () => {
+  const user = await currentUser();
+  const role = user?.publicMetadata.role as string;
+
   return (
     <div className='mt-4 text-sm'>
       {menuItems.map((i) => (

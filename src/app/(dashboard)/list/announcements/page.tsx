@@ -2,9 +2,9 @@ import FormModal from '@/components/FormModal';
 import Pagination from '@/components/Pagination';
 import Table from '@/components/Table';
 import TableSearch from '@/components/TableSearch';
-import { role } from '@/lib/data';
 import prisma from '@/lib/prisma';
 import { ITEM_PER_PAGE } from '@/lib/settings';
+import { currentUserId, role } from '@/lib/utils';
 import { Announcement, Class, Prisma } from '@prisma/client';
 import Image from 'next/image';
 
@@ -24,10 +24,14 @@ const columns = [
     acessor: 'date',
     className: 'hidden md:table-cell',
   },
-  {
-    header: 'Actions',
-    acessor: 'action',
-  },
+  ...(role === 'admin'
+    ? [
+        {
+          header: 'Actions',
+          acessor: 'action',
+        },
+      ]
+    : []),
 ];
 
 const renderRow = (item: AnnouncementList) => (
@@ -36,7 +40,7 @@ const renderRow = (item: AnnouncementList) => (
     className='border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-lovelySkyLight'
   >
     <td className='flex items-center gap-4 p-4'>{item.title}</td>
-    <td>{item.class.name}</td>
+    <td>{item.class?.name || '---'}</td>
     <td className='hidden md:table-cell'>
       {new Intl.DateTimeFormat('pt-BR').format(item.date)}
     </td>
@@ -63,12 +67,23 @@ const AnnouncementListPage = async ({
 
   // URL PARAM CONDITION
   const query: Prisma.AnnouncementWhereInput = {};
+
+  query.title = {};
+
   if (queryParams) {
     for (const [key, value] of Object.entries(queryParams)) {
       if (value !== undefined) {
         switch (key) {
           case 'search':
-            query.OR = [{ title: { contains: value, mode: 'insensitive' } }];
+            // query.OR = [
+            //   {
+            //     title: { contains: value, mode: 'insensitive' },
+            //   },
+            //   {
+            //     class: { name: { contains: value, mode: 'insensitive' } },
+            //   },
+            // ];
+            query.title = { contains: value, mode: 'insensitive' };
             break;
           default:
             break;
@@ -76,6 +91,20 @@ const AnnouncementListPage = async ({
       }
     }
   }
+
+  // ROLE CONDITIONS
+  const roleConditions = {
+    teacher: { lessons: { some: { teacherId: currentUserId! } } },
+    student: { students: { some: { id: currentUserId! } } },
+    parent: { students: { some: { parentId: currentUserId! } } },
+  };
+
+  query.OR = [
+    { classId: null },
+    {
+      class: roleConditions[role as keyof typeof roleConditions] || {},
+    },
+  ];
 
   const [data, count] = await prisma.$transaction([
     prisma.announcement.findMany({

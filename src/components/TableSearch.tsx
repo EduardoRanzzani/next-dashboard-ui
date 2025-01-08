@@ -8,14 +8,19 @@ const TableSearch = () => {
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const value = (e.currentTarget[0] as HTMLInputElement).value;
-
     const params = new URLSearchParams(window.location.search);
 
     if (params.get('page') !== '1') {
       params.set('page', '1');
     }
 
+    params.delete('page');
     params.set('search', value);
+
+    if (value === '') {
+      params.delete('search');
+    }
+
     router.push(`${window.location.pathname}?${params}`);
   };
 
