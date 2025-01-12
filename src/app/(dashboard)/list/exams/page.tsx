@@ -118,12 +118,14 @@ const ExamListPage = async ({
 		parent: { class: { students: { some: { parentId: currentUserId! } } } },
 	};
 
-	query.OR = [
-		{ lesson: undefined },
-		{
-			lesson: roleConditions[(role as keyof typeof roleConditions) || {}],
-		},
-	];
+	if (role !== 'admin') {
+		query.OR = [
+			{ lesson: undefined },
+			{
+				lesson: roleConditions[(role as keyof typeof roleConditions) || {}],
+			},
+		];
+	}
 
 	const [data, count] = await prisma.$transaction([
 		prisma.exam.findMany({

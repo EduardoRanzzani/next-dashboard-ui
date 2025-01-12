@@ -1,5 +1,4 @@
 import Announcements from '@/components/Announcements';
-import BigCalendar from '@/components/BigCalendar';
 import BigCalendarContainer from '@/components/BigCalendarContainer';
 import EventCalendar from '@/components/EventCalendar';
 import prisma from '@/lib/prisma';
