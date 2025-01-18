@@ -19,7 +19,7 @@ services:
     ports:
       - '3000:3000'
     environment:
-      DATABASE_URL: postgresql://lamadev:lama123456@postgres:5432/school
+      DATABASE_URL: postgresql://lamadev:lama123456@147.79.86.185:5432/school
     depends_on:
       - postgres
 
