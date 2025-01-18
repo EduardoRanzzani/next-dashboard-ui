@@ -1,160 +1,145 @@
 'use client';
 
+import {
+	examSchema,
+	ExamSchema,
+	subjectSchema,
+	SubjectSchema,
+} from '@/lib/formValidationSchema';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
-import { z } from 'zod';
 import InputField from '../InputField';
-import SelectField from '../SelectField';
-import UploadField from '../UploadField';
-
-const schema = z.object({
-  username: z
-    .string()
-    .min(3, { message: 'Username must be at least 3 characters long!' })
-    .max(20, { message: 'Username must be at most 20 characters long!' }),
-  email: z.string().email({ message: 'Invalid email address!' }),
-  password: z
-    .string()
-    .min(8, { message: 'Password must be at least 8 characters long!' }),
-  firstname: z.string().min(1, { message: 'Firstname is required!' }),
-  lastname: z.string().min(1, { message: 'Lastname is required!' }),
-  phone: z.string().min(8, { message: 'Phone is required!' }),
-  address: z.string().min(1, { message: 'Address is required!' }),
-  bloodType: z.string().min(1, { message: 'Blood Type is required!' }),
-  birthday: z.date({ message: 'Birthday is required!' }),
-  sex: z.enum(['Male', 'Female'], { message: 'Sex is required!' }),
-  img: z.instanceof(File, { message: 'Image is required!' }),
-});
-
-type Inputs = z.infer<typeof schema>;
+import {
+	createExam,
+	createSubject,
+	updateExam,
+	updateSubject,
+} from '@/lib/actions';
+import { useFormState } from 'react-dom';
+import { Dispatch, SetStateAction, useEffect } from 'react';
+import { toast } from 'react-toastify';
+import { useRouter } from 'next/navigation';
 
 const ExamForm = ({
-  type,
-  data,
+	setOpen,
+	type,
+	data,
+	relatedData,
 }: {
-  type: 'create' | 'update';
-  data?: any;
+	setOpen: Dispatch<SetStateAction<boolean>>;
+	type: 'create' | 'update';
+	data?: any;
+	relatedData?: any;
 }) => {
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<Inputs>({ resolver: zodResolver(schema) });
+	const {
+		register,
+		handleSubmit,
+		formState: { errors },
+	} = useForm<ExamSchema>({ resolver: zodResolver(examSchema) });
+	const router = useRouter();
 
-  const onSubmit = handleSubmit((data) => {
-    console.log(data);
-  });
+	// AFTER REACT 19 IT'LL BE USEACTIONSTATE
+	const [state, formAction] = useFormState(
+		type === 'create' ? createExam : updateExam,
+		{
+			success: false,
+			error: false,
+		}
+	);
 
-  return (
-    <form className='flex flex-col gap-8' onSubmit={onSubmit}>
-      <h1 className='text-xl font-semibold'>Create a new Exam</h1>
-      <span className='text-xs text-gray-400 font-medium'>
-        Authentication Information
-      </span>
+	useEffect(() => {
+		if (state.success) {
+			toast(`Exam ${type}d successfully!`);
+			setOpen(false);
+			router.refresh();
+		}
+	}, [state]);
 
-      <div className='flex justify-between flex-wrap gap-8'>
-        <InputField
-          label='Username'
-          name='username'
-          defaultValue={data?.username}
-          register={register}
-          error={errors?.username}
-        />
-        <InputField
-          label='Email'
-          name='email'
-          type='email'
-          defaultValue={data?.email}
-          register={register}
-          error={errors?.email}
-        />
-        <InputField
-          label='Password'
-          name='password'
-          type='password'
-          defaultValue={data?.password}
-          register={register}
-          error={errors?.password}
-        />
-      </div>
+	const onSubmit = handleSubmit((data) => {
+		console.log(data);
+		formAction(data);
+	});
 
-      <span className='text-xs text-gray-400 font-medium'>
-        Personal Information
-      </span>
+	const { lessons } = relatedData || {};
 
-      <div className='flex justify-between flex-wrap gap-8'>
-        <InputField
-          label='Firstname'
-          name='firstname'
-          defaultValue={data?.firstname}
-          register={register}
-          error={errors?.firstname}
-        />
+	return (
+		<form className='flex flex-col gap-8' onSubmit={onSubmit}>
+			<h1 className='text-xl font-semibold'>
+				{type === 'create' ? 'Create a new ' : 'Update a '} Exam
+			</h1>
 
-        <InputField
-          label='Lastname'
-          name='lastname'
-          defaultValue={data?.lastname}
-          register={register}
-          error={errors?.lastname}
-        />
+			<div className='flex justify-between flex-wrap gap-4'>
+				{data && (
+					<InputField
+						label='Id'
+						name='id'
+						defaultValue={data?.id}
+						register={register}
+						error={errors?.id}
+						hidden
+					/>
+				)}
 
-        <InputField
-          label='Phone'
-          name='phone'
-          defaultValue={data?.phone}
-          register={register}
-          error={errors?.phone}
-        />
+				<InputField
+					label='Exam Title'
+					name='title'
+					defaultValue={data?.title}
+					register={register}
+					error={errors?.title}
+				/>
 
-        <InputField
-          label='Address'
-          name='address'
-          defaultValue={data?.address}
-          register={register}
-          error={errors?.address}
-        />
+				<InputField
+					label='Start date'
+					name='startTime'
+					defaultValue={data?.startTime}
+					register={register}
+					type='datetime-local'
+					error={errors?.startTime}
+				/>
 
-        <InputField
-          label='Blood Type'
-          name='bloodType'
-          defaultValue={data?.bloodType}
-          register={register}
-          error={errors?.bloodType}
-        />
+				<InputField
+					label='End Time'
+					name='endTime'
+					defaultValue={data?.endTime}
+					register={register}
+					error={errors?.endTime}
+					type='datetime-local'
+				/>
 
-        <InputField
-          label='Date of Birth'
-          name='birthday'
-          type='date'
-          defaultValue={data?.birthday}
-          register={register}
-          error={errors?.birthday}
-        />
+				<div className='flex flex-col gap-2 w-full md:w-1/4'>
+					<label className='text-xs text-gray-500' htmlFor='lessons'>
+						Lessons:
+					</label>
+					<select
+						className='ring-[1.5px] ring-gray-300 p-2 rounded-md text-sm w-full'
+						{...register('lessonId')}
+						defaultValue={data?.lessonId}
+						name='lessons'
+						id='lessons'
+					>
+						{lessons.map((lesson: { id: number; name: string }) => (
+							<option key={lesson.id} value={lesson.id}>
+								{lesson.name}
+							</option>
+						))}
+					</select>
+					{errors.lessonId?.message && (
+						<p className='text-xs text-red-400'>
+							{errors.lessonId?.message.toString()}
+						</p>
+					)}
+				</div>
+			</div>
 
-        <SelectField
-          label='Sex'
-          name='sex'
-          defaultValue={data?.sex}
-          register={register}
-          error={errors?.sex}
-          options={['Select...', 'Male', 'Female']}
-        />
+			{state.error && (
+				<span className='text-red-500'>Something went wrong!</span>
+			)}
 
-        <UploadField
-          label='Upload an Image'
-          name='img'
-          type='file'
-          register={register}
-          error={errors?.img}
-        />
-      </div>
-
-      <button className='bg-blue-400 text-white p-2 rounded-md'>
-        {type === 'create' ? 'Create' : 'Update'}
-      </button>
-    </form>
-  );
+			<button className='bg-blue-400 text-white p-2 rounded-md'>
+				{type === 'create' ? 'Create' : 'Update'}
+			</button>
+		</form>
+	);
 };
 
 export default ExamForm;

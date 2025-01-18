@@ -36,7 +36,7 @@ const SingleStudentPage = async ({
 					},
 				},
 			},
-		}, 
+		},
 	});
 
 	if (!student) {
@@ -151,7 +151,7 @@ const SingleStudentPage = async ({
 
 				{/* BOTTOM */}
 				<div className='mt-4 bg-white rounded-md p-4 h-[800px]'>
-					<h1 className='text-xl font-semibold'>Student's Schedule</h1>
+					<h1 className='text-xl font-semibold'>Student&apos;s Schedule</h1>
 					<BigCalendarContainer type='classId' id={student.class.id} />
 				</div>
 			</div>
@@ -165,31 +165,31 @@ const SingleStudentPage = async ({
 							className='p-3 rounded-md bg-lovelySkyLight'
 							href={`/list/lessons?classId=${2}`}
 						>
-							Student's Lessons
+							Student&apos;s Lessons
 						</Link>
 						<Link
 							className='p-3 rounded-md bg-lovelyPurpleLight'
 							href={`/list/teachers?classId=${2}`}
 						>
-							Student's Teachers
+							Student&apos;s Teachers
 						</Link>
 						<Link
 							className='p-3 rounded-md bg-pink-50'
 							href={`/list/exams?classId=${2}`}
 						>
-							Student's Exams
+							Student&apos;s Exams
 						</Link>
 						<Link
 							className='p-3 rounded-md bg-lovelySkyLight'
 							href={`/list/assignments?classId=${2}`}
 						>
-							Student's Assignments
+							Student&apos;s Assignments
 						</Link>
 						<Link
 							className='p-3 rounded-md bg-lovelyYellowLight'
 							href={`/list/results?studentId=${'student2'}`}
 						>
-							Student's Results
+							Student&apos;s Results
 						</Link>
 					</div>
 				</div>
